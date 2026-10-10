@@ -60,6 +60,29 @@ class FileManager:
         self._validate_path_safety(output_path, output_dir)
         return output_path
 
+    def build_pitch_output_path(
+        self, input_path: Path, semitones: float, output_dir: Path | None = None
+    ) -> Path:
+        """Builds an output path for a pitch-shifted copy of an audio file.
+
+        Args:
+            input_path: The source audio file path.
+            semitones: The semitone offset applied (negative lowers pitch).
+            output_dir: Target directory; defaults to the input file's directory.
+
+        Returns:
+            A fully resolved, safe output Path.
+        """
+        target_dir = (output_dir or input_path.parent).resolve()
+        sign = "+" if semitones > 0 else ""
+        suffix_label = f"{sign}{semitones:g}st"
+        base_name = f"{input_path.stem} ({suffix_label})"
+        filename = self.sanitize_filename(base_name, input_path.suffix.lstrip("."))
+        output_path = target_dir / filename
+
+        self._validate_path_safety(output_path, target_dir)
+        return output_path
+
     def ensure_directory(self, path: Path) -> Path:
         """Creates a directory if it doesn't exist.
 

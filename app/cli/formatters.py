@@ -11,7 +11,7 @@ from rich.progress import (
 )
 from rich.text import Text
 
-from app.domain.entities import DownloadResult
+from app.domain.entities import DownloadResult, PitchShiftResult
 from app.domain.protocols import ProgressCallback
 
 console = Console(stderr=True)
@@ -90,6 +90,27 @@ def print_success(result: DownloadResult) -> None:
             f"[bold green]Download completed![/bold green]\n\n"
             f"[bold]Title:[/bold] {result.video.title}\n"
             f"[bold]Format:[/bold] {result.output_format.value.upper()}\n"
+            f"[bold]Size:[/bold] {size_str}\n"
+            f"[bold]Path:[/bold] {result.output_path}",
+            title="[green]Success[/green]",
+            border_style="green",
+        )
+    )
+
+
+def print_pitch_success(result: PitchShiftResult) -> None:
+    """Prints a success message with pitch-shift details.
+
+    Args:
+        result: The completed pitch-shift result.
+    """
+    size_str = _format_file_size(result.file_size_bytes)
+    console.print()
+    console.print(
+        Panel(
+            f"[bold green]Pitch shift completed![/bold green]\n\n"
+            f"[bold]Input:[/bold] {result.input_path.name}\n"
+            f"[bold]Semitones:[/bold] {result.semitones:+g}\n"
             f"[bold]Size:[/bold] {size_str}\n"
             f"[bold]Path:[/bold] {result.output_path}",
             title="[green]Success[/green]",

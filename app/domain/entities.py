@@ -32,6 +32,7 @@ class DownloadRequest:
     is_playlist: bool = False
     max_retries: int = 3
     timeout: int = 300
+    cookies_from_browser: str | None = None
 
 
 @dataclass
@@ -48,4 +49,32 @@ class DownloadResult:
     @property
     def is_success(self) -> bool:
         """Returns True if the download completed successfully."""
+        return self.status == Status.COMPLETED
+
+
+@dataclass
+class PitchShiftRequest:
+    """Represents a request to pitch-shift an existing audio file."""
+
+    input_path: Path
+    output_path: Path
+    semitones: float
+    audio_bitrate: str = "320k"
+    timeout: int = 300
+
+
+@dataclass
+class PitchShiftResult:
+    """Represents the result of a pitch-shift operation."""
+
+    input_path: Path
+    output_path: Path
+    semitones: float
+    status: Status
+    file_size_bytes: int | None = None
+    error_message: str | None = None
+
+    @property
+    def is_success(self) -> bool:
+        """Returns True if the pitch-shift completed successfully."""
         return self.status == Status.COMPLETED

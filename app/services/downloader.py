@@ -54,7 +54,9 @@ class VideoDownloader:
         output_dir = self._file_manager.ensure_directory(request.output_dir)
 
         # Extract metadata first (without stream URLs) to build the output path
-        video_info = self._extract_info(request.url, request.timeout)
+        video_info = self._extract_info(
+            request.url, request.timeout, request.cookies_from_browser
+        )
         video = self._build_video_entity(video_info)
 
         output_path = self._file_manager.build_output_path(
@@ -112,12 +114,16 @@ class VideoDownloader:
             error_message=error_msg,
         )
 
-    def _extract_info(self, url: str, timeout: int) -> dict[str, Any]:
+    def _extract_info(
+        self, url: str, timeout: int, cookies_from_browser: str | None = None
+    ) -> dict[str, Any]:
         """Extracts video metadata without downloading.
 
         Args:
             url: The YouTube video URL.
             timeout: Socket timeout in seconds.
+            cookies_from_browser: Optional browser name to pull cookies from
+                (bypasses YouTube's bot/age checks on restricted videos).
 
         Returns:
             A dictionary containing video metadata from yt-dlp.
@@ -133,6 +139,8 @@ class VideoDownloader:
             "extract_flat": False,
             "noplaylist": True,
         }
+        if cookies_from_browser:
+            opts["cookiesfrombrowser"] = (cookies_from_browser,)
 
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -229,6 +237,8 @@ class VideoDownloader:
             "overwrites": True,
             "progress_hooks": [self._progress_hook],
         }
+        if request.cookies_from_browser:
+            opts["cookiesfrombrowser"] = (request.cookies_from_browser,)
 
         if request.output_format == Format.MP3:
             opts.update(self._mp3_options())

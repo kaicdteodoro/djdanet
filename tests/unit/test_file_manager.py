@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from app.services.file_manager import FileManager
 
@@ -52,6 +53,29 @@ class TestBuildOutputPath:
                 tmp_path / ".." / ".." / "etc" / "passwd",
                 tmp_path,
             )
+
+
+class TestBuildPitchOutputPath:
+    def setup_method(self) -> None:
+        self.fm = FileManager()
+
+    def test_appends_negative_semitone_label(self, tmp_path: Path) -> None:
+        input_path = tmp_path / "song.mp3"
+        result = self.fm.build_pitch_output_path(input_path, -1.0)
+        assert result.name == "song (-1st).mp3"
+        assert result.parent == tmp_path.resolve()
+
+    def test_appends_positive_semitone_label_with_sign(self, tmp_path: Path) -> None:
+        input_path = tmp_path / "song.mp3"
+        result = self.fm.build_pitch_output_path(input_path, 2.0)
+        assert result.name == "song (+2st).mp3"
+
+    def test_uses_custom_output_dir(self, tmp_path: Path) -> None:
+        input_path = tmp_path / "song.mp3"
+        out_dir = tmp_path / "shifted"
+        out_dir.mkdir()
+        result = self.fm.build_pitch_output_path(input_path, -1.0, out_dir)
+        assert result.parent == out_dir.resolve()
 
 
 class TestEnsureDirectory:

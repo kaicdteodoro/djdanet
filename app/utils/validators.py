@@ -1,7 +1,10 @@
 import re
+from pathlib import Path
 
 from app.domain.enums import Format, Quality
-from app.domain.exceptions import InvalidFormatError, InvalidURLError
+from app.domain.exceptions import InvalidAudioFileError, InvalidFormatError, InvalidURLError
+
+MAX_SEMITONES = 24.0
 
 YOUTUBE_URL_PATTERNS: list[re.Pattern[str]] = [
     re.compile(
@@ -93,3 +96,49 @@ def validate_quality(quality: str) -> Quality:
         raise InvalidFormatError(
             f"Unsupported quality '{quality}'. Valid options: {valid}"
         ) from None
+
+
+def validate_input_file(path: str) -> Path:
+    """Validates that a path points to an existing, readable audio file.
+
+    Args:
+        path: The file path string to validate.
+
+    Returns:
+        A resolved Path to the audio file.
+
+    Raises:
+        InvalidAudioFileError: If the path is empty, missing, or not a file.
+    """
+    cleaned = path.strip()
+    if not cleaned:
+        raise InvalidAudioFileError("Input file path cannot be empty")
+
+    resolved = Path(cleaned).expanduser().resolve()
+    if not resolved.exists():
+        raise InvalidAudioFileError(f"File not found: {resolved}")
+    if not resolved.is_file():
+        raise InvalidAudioFileError(f"Not a file: {resolved}")
+
+    return resolved
+
+
+def validate_semitones(value: float) -> float:
+    """Validates a semitone offset for pitch shifting.
+
+    Args:
+        value: The number of semitones to shift (negative lowers pitch).
+
+    Returns:
+        The validated semitone offset.
+
+    Raises:
+        InvalidFormatError: If the offset is zero or outside the supported range.
+    """
+    if value == 0:
+        raise InvalidFormatError("Semitone offset cannot be zero")
+    if abs(value) > MAX_SEMITONES:
+        raise InvalidFormatError(
+            f"Semitone offset must be within +/-{MAX_SEMITONES:g}, got {value:g}"
+        )
+    return value

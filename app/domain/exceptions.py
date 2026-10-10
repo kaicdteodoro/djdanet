@@ -24,3 +24,11 @@ class ConversionError(DjdanetError):
 
 class NetworkError(DjdanetError):
     """Raised when a network-related error occurs."""
+
+
+class PitchShiftError(DjdanetError):
+    """Raised when audio pitch-shifting fails."""
+
+
+class InvalidAudioFileError(DjdanetError):
+    """Raised when the provided audio file path is missing or unreadable."""
